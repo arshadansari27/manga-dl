@@ -1,42 +1,60 @@
-class DB:
-    pass
+from sqlalchemy import create_engine, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, backref, sessionmaker
+
+engine = create_engine('sqlite:///manga.db', echo=False)
+Base = declarative_base()
+Session = sessionmaker(bind=engine)
+session = Session()
 
 
-class Feed:
+class Feed(Base):
+    __tablename__ = "feeds"
 
-    def __init__(self, name, link):
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    link = Column(String)
+    xml = Column(String)
+    chapters = relationship("Chapter", backref=backref("feed", order_by=id))
+
+    def __init__(self, name, link, xml):
         self.name = name
         self.link = link
-        self.nodes = []
-
-    def add_node(self, title, page_link):
-        node = Node(title, page_link, self.name)
-        self.nodes.append(node)
+        self.xml = xml
 
 
-class Node:
+class Chapter(Base):
+    __tablename__ = "chapters"
 
-    def __init__(self, title, link, feed_name):
-        index = -1
-        ch = title[index]
-        while ch != ' ':
-            index -= 1
-            ch = title[index]
-        self.id = title[index + 1:]
+    id = Column(Integer, primary_key=True)
+    title = Column(String)
+    link = Column(String)
+    done = Column(Boolean)
+    feed_id = Column(Integer, ForeignKey("feeds.id"))
+    pages = relationship("Page", backref=backref("chapter", order_by=title))
+
+    def __init__(self, title, link, feed):
         self.title = title
         self.link = link
         self.done = False
-        self.pages = []
-        self.feed_name = feed_name
-
-    def add_page(self, link, image, next_link):
-        page = Page(self.id, link, image, next_link)
-        self.pages.append(page)
+        self.feed_id = feed.id
 
 
-class Page:
-    def __init__(self, node_id, link, image, next_link):
-        self.node_id = node_id
-        self.link = link
-        self.image = image
-        self.next_link = next_link
+class Page(Base):
+    __tablename__ = 'pages'
+    id = Column(Integer, primary_key=True)
+    page_link = Column(String)
+    image_link = Column(String)
+    next_page_id = Column(Integer, ForeignKey("pages.id"))
+    chapter_id = Column(Integer, ForeignKey("chapters.id"))
+
+    def __init__(self, link, chapter):
+        self.page_link = link
+        self.chapter_id = chapter.id
+
+    def __repr__(self):
+        return str(self.id) + ": " + self.link + ", " + self.image_link
+
+
+Base.metadata.create_all(engine)
