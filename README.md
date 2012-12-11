@@ -1,0 +1,4 @@
+manga-dl
+========
+
+Manga downloader
