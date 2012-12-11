@@ -1,3 +1,7 @@
 *.pyc
+*.jpg
 manga.db*
+dir-test/*
 tags
+log.txt
+

@@ -40,6 +40,12 @@ class Chapter(Base):
         self.done = False
         self.feed_id = feed.id
 
+    def __lt__(self, other):
+        return self.title < other.title
+
+    def __gt__(self, other):
+        return self.title > other.title
+
 
 class Page(Base):
     __tablename__ = 'pages'
@@ -48,13 +54,21 @@ class Page(Base):
     image_link = Column(String)
     next_page_id = Column(Integer, ForeignKey("pages.id"))
     chapter_id = Column(Integer, ForeignKey("chapters.id"))
+    downloaded = Column(Boolean)
 
     def __init__(self, link, chapter):
         self.page_link = link
         self.chapter_id = chapter.id
+        self.downloaded = False
 
     def __repr__(self):
         return str(self.id) + ": " + self.link + ", " + self.image_link
+
+    def __lt__(self, other):
+        return self.page_link < other.page_link
+
+    def __gt__(self, other):
+        return self.page_link > other.page_link
 
 
 Base.metadata.create_all(engine)

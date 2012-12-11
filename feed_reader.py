@@ -67,15 +67,22 @@ def setup_chapters(feed):
 
 
 def setup_pages(chapter):
+    if chapter.done:
+        return []
     pages = session.query(Page).filter(Page.chapter_id == chapter.id).all()
     if pages is None:
-        return None
+        return []
     for page in pages:
         if page.page_link is None:
             raise Exception("How could page link be none")
         if page.next_page_id is not None:
             continue
         update_page(page, chapter)
+        if page.next_page_id is None:
+            # This means, this is processed and yet it remains none
+            chapter.done = True
+            session.add(chapter)
+            session.commit()
     return session.query(Page).filter(Page.chapter_id == chapter.id).all()
 
 
