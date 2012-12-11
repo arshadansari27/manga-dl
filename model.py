@@ -1,29 +1,22 @@
-import sqlite3
-
-
 class DB:
-    def __init__(self, database='manga.db'):
-        try:
-            self.conn = sqlite3.connect(database)
-        except:
-            print "Error occured when opening the connection"
+    pass
 
-    def close(self):
-        try:
-            self.conn.close()
-        except:
-            print "Error occured when closing the connection"
 
-    def executeOne(self, sql):
-        return self.conn.execute(sql)
+class Feed:
 
-    def executeMany(self, sql, datas):
-        return self.conn.executemany(sql, datas)
+    def __init__(self, name, link):
+        self.name = name
+        self.link = link
+        self.nodes = []
+
+    def add_node(self, title, page_link):
+        node = Node(title, page_link, self.name)
+        self.nodes.append(node)
 
 
 class Node:
 
-    def __init__(self, title, link, feed_name='magi_the_labyrinth_of_magic.xml'):
+    def __init__(self, title, link, feed_name):
         index = -1
         ch = title[index]
         while ch != ' ':
@@ -36,7 +29,14 @@ class Node:
         self.pages = []
         self.feed_name = feed_name
 
+    def add_page(self, link, image, next_link):
+        page = Page(self.id, link, image, next_link)
+        self.pages.append(page)
+
 
 class Page:
-    def __init__(self, node):
-        pass
+    def __init__(self, node_id, link, image, next_link):
+        self.node_id = node_id
+        self.link = link
+        self.image = image
+        self.next_link = next_link
